@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Exam Timetable Studio: Graph Coloring with Backtracking</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Young+Serif&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eaf0f8;--ink:#101a33;--mut:#53607f;--card:#fff;--line:#d3dcec;--acc:#2536e8;--accb:#fff;--ok:#0c8a5c;--bad:#cf2d4b;--warn:#a86a00;--sel:#e4e9ff;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1429;--ink:#e8ecff;--mut:#9aa6cf;--card:#17203d;--line:#26325a;--acc:#8c9bff;--accb:#0e1429;--ok:#4fd1a1;--bad:#ff7d93;--warn:#f1c24d;--sel:#222d58;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1429;--ink:#e8ecff;--mut:#9aa6cf;--card:#17203d;--line:#26325a;--acc:#8c9bff;--accb:#0e1429;--ok:#4fd1a1;--bad:#ff7d93;--warn:#f1c24d;--sel:#222d58;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 Figtree,system-ui,sans-serif}
+h1,h2,h3{font-family:"Young Serif",Georgia,serif;font-weight:400;line-height:1.12;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+header{padding:44px 0 22px}
+h1{font-size:clamp(2.2rem,5.6vw,4rem);letter-spacing:-.02em;max-width:17ch}
+.sub{max-width:60ch;color:var(--mut);font-size:1.1rem;margin:14px 0 0}
+section{padding:24px 0}
+h2{font-size:1.7rem;margin-bottom:6px}.lead{color:var(--mut);margin:0 0 16px;max-width:66ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.bench{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:900px){.bench{grid-template-columns:1fr}}
+label.f{display:block;font-size:.88rem;font-weight:600;margin:0 0 6px}
+textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:.9rem;padding:9px 11px}
+textarea{min-height:230px;resize:vertical;line-height:1.5;margin-top:12px}
+button{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 14px;cursor:pointer}
+button.p{background:var(--acc);color:var(--accb);border-color:var(--acc)}
+button:focus-visible,textarea:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.err{color:var(--bad);font-size:.9rem;min-height:1.3em;margin-top:8px}
+.note{color:var(--mut);font-size:.85rem;margin:0}
+.board{border-radius:12px;border:1px solid var(--line);background-color:var(--bg);background-image:linear-gradient(color-mix(in srgb,var(--line) 70%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--line) 70%,transparent) 1px,transparent 1px);background-size:26px 26px}
+svg{width:100%;height:auto;display:block}.nd{cursor:grab;touch-action:none}
+.top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:.88rem;color:var(--mut)}.top b{color:var(--ink)}
+.leg{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 0;font-size:.85rem;color:var(--mut);min-height:1.6em}.lg i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-1px}
+.cap{margin:12px 0 0;padding:12px 14px;border-radius:10px;background:var(--sel);border-left:5px solid var(--acc);font-weight:600;min-height:3.4em}
+.cap.conflict{border-color:var(--bad)}.cap.back,.cap.fail{border-color:var(--warn)}.cap.assign,.cap.done{border-color:var(--ok)}
+.log{list-style:none;margin:8px 0 0;padding:0;font-size:.85rem;color:var(--mut);min-height:5.6em}.log li{padding:2px 0 2px 12px;border-left:2px solid var(--line)}
+input[type=range]{width:100%;accent-color:var(--acc);margin-top:12px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:16px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;color:var(--mut);font-size:.85rem}.stats b{display:block;font:400 1.7rem "Young Serif",serif;color:var(--ink)}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{padding:10px;border:1px solid var(--line);text-align:left;vertical-align:top}th{background:var(--sel)}
+td.sl{color:#10122a}td.sl span{display:inline-block;background:rgba(255,255,255,.65);border-radius:7px;padding:1px 9px;margin:2px 3px 2px 0;font-weight:600}
+.ex{display:inline-block;color:#10122a;border-radius:8px;padding:2px 10px;margin:2px 6px 2px 0;font-weight:600}.ex small{font-weight:500;opacity:.75}
+.verdict{margin:12px 0 0;font-weight:600}.ok{color:var(--ok)}.no{color:var(--bad)}
+.bar{display:grid;grid-template-columns:170px 1fr;gap:10px;align-items:center;margin:8px 0;font-size:.9rem}
+.bar div{background:var(--bg);border-radius:8px;position:relative;height:30px;font-weight:700;line-height:30px;padding-left:10px}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--acc);opacity:.28;border-radius:8px}.bar div{overflow:hidden}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.grid4 .card b{font:400 1.1rem "Young Serif",serif}.grid4 .card p{margin:6px 0 0;color:var(--mut);font-size:.95rem}
+.n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--acc);color:var(--accb);font-weight:700;margin-bottom:8px}
+footer{padding:26px 0 50px;color:var(--mut);font-size:.9rem}
+@media(max-width:600px){.bar{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+<header><h1>Fit every exam into the fewest slots.</h1>
+<p class="sub">Subjects become dots. Two subjects that share a student get a line between them. Coloring the dots so that no line joins two matching colors gives a clash-free timetable, and the fewest colors is the fewest slots. Backtracking finds that number.</p></header>
+
+<section><div class="bench">
+<div class="card">
+<label class="f" for="pre">Start from an example</label>
+<select id="pre"><option value="school">School: 8 subjects</option><option value="college">College: 8 subjects, bigger groups</option><option value="wheel">Wheel: forces real backtracking</option></select>
+<textarea id="inp" aria-label="Students and their subjects" spellcheck="false"></textarea>
+<div class="row"><button class="p" id="gen">Generate timetable</button><button id="rnd">Random data</button></div>
+<div class="err" id="err" role="alert"></div>
+<p class="note">One student per line: <i>Name: Subject, Subject</i>. Up to 14 subjects. Drag any dot to rearrange the graph.</p>
+</div>
+<div class="card">
+<div class="top"><span>Round <b id="sK">-</b></span><span>Step <b id="sS">0</b> of <b id="sT">0</b></span><span>Undo moves so far <b id="sB">0</b></span></div>
+<div class="board"><svg id="g" viewBox="0 0 460 440" role="img" aria-label="Conflict graph of subjects"></svg></div>
+<div class="leg" id="leg"></div>
+<div class="cap" id="cap" aria-live="polite"></div>
+<ul class="log" id="log"></ul>
+<input type="range" id="sl" min="0" max="0" value="0" aria-label="Step slider">
+<div class="row"><button class="p" id="play">Play</button><button id="prev">Back</button><button id="next">Next</button><button id="end">Skip to result</button>
+<label style="font-size:.85rem;color:var(--mut)">Speed <input type="range" id="spd" min="1" max="10" value="6" style="width:90px;margin:0"></label></div>
+</div></div>
+<div class="stats" id="stats"></div></section>
+
+<section><h2>Your exam timetable</h2><p class="lead" id="tl"></p>
+<div class="row" style="margin:0 0 12px"><label for="spd2" style="font-size:.9rem;font-weight:600">Exams per day</label><select id="spd2" style="width:auto"><option>1</option><option selected>2</option><option>3</option></select><button id="cp">Copy as text</button><span class="note" id="cps"></span></div>
+<div class="card tw"><table id="tt"></table></div>
+<p class="verdict" id="ver"></p>
+<h2 style="margin-top:26px;font-size:1.3rem">What each student sees</h2>
+<div class="card tw" style="margin-top:10px"><table id="st"></table></div></section>
+
+<section><h2>Why not just pick the first free slot?</h2>
+<p class="lead" id="cmpt"></p><div class="card" id="cmp"></div></section>
+
+<section><h2>How the search thinks</h2>
+<p class="lead">Four moves are enough to understand the whole algorithm.</p>
+<div class="grid4">
+<div class="card"><span class="n">1</span><br><b>Guess a slot count</b><p>Start with k = 1 slot. If that fails, try 2, then 3. The first k that works is the minimum.</p></div>
+<div class="card"><span class="n">2</span><br><b>Place one subject</b><p>Take the busiest subject first. Give it the lowest slot that none of its neighbours already uses.</p></div>
+<div class="card"><span class="n">3</span><br><b>Check for clashes</b><p>A neighbour in the same slot means a shared student, so that slot is rejected and the next one is tried.</p></div>
+<div class="card"><span class="n">4</span><br><b>Backtrack when stuck</b><p>If a subject has no valid slot, undo the previous choice and try something else. If everything fails, move to k + 1.</p></div>
+</div>
+<div class="grid4" style="margin-top:14px">
+<div class="card"><b>Speed-ups</b><p>Busiest subjects first, and no new slot is opened until it is needed, so mirror-image colorings are never repeated.</p></div>
+<div class="card"><b>Cost</b><p>Worst case grows like kⁿ. Graph coloring is NP-hard, so large inputs use heuristics such as DSATUR. A school’s subject list is small enough for exact search.</p></div>
+<div class="card"><b>Same idea elsewhere</b><p>Mobile tower frequencies, compiler register allocation, map coloring, and Sudoku all reduce to coloring a graph.</p></div>
+</div></section>
+<footer>Capstone project: exam timetable generation using graph coloring with backtracking.</footer></div>
+<script>
+const $=id=>document.getElementById(id);
+const NM=['Maths','Physics','Chemistry','Biology','English','History','Geography','Economics','CS','Hindi','Civics','Art','Music','Statistics'];
+const PRE={school:`Aarav: Maths, Physics, Chemistry
+Diya: Maths, Physics, CS
+Kabir: Chemistry, Biology, English
+Meera: Biology, English, Economics
+Ishaan: CS, Economics, Maths
+Sara: Physics, English, History
+Rohan: History, Economics, Biology
+Anya: CS, History, Chemistry`,
+college:`Neha: Calculus, Algorithms, Databases, Networks
+Omar: Calculus, Physics, Statistics
+Pia: Algorithms, Databases, Statistics
+Quin: Networks, Ethics, Economics
+Ravi: Physics, Ethics, Calculus
+Sita: Economics, Statistics, Databases
+Tara: Algorithms, Ethics, Networks
+Uday: Physics, Economics, Algorithms
+Vik: Databases, Ethics, Physics`,
+wheel:`S1: Maths, Physics
+S2: Maths, Chemistry
+S3: Maths, Biology
+S4: Maths, CS
+S5: Maths, English
+S6: Physics, Chemistry
+S7: Chemistry, Biology
+S8: Biology, CS
+S9: CS, English
+S10: English, Physics`};
+const SES=['morning','afternoon','evening'];
+const colr=c=>`hsl(${(c*137+205)%360} 80% 70%)`;
+let names=[],students=[],adj=[],N=0,steps=[],final=[],K=0,pos=0,timer=null,trunc=false,order=[],P=[],drag=-1,nodes=0,back=0,exact=true,gk=0,clq=1,E=0;
+function parse(){names=[];students=[];
+ for(const r of $('inp').value.split('\n').map(l=>l.trim()).filter(Boolean)){const i=r.indexOf(':');if(i<0)continue;
+  const subs=[...new Set(r.slice(i+1).split(',').map(s=>s.trim()).filter(Boolean))];
+  subs.forEach(s=>{if(!names.includes(s))names.push(s)});students.push({n:r.slice(0,i).trim(),subs})}
+ N=names.length;adj=Array.from({length:N},()=>Array(N).fill(false));
+ for(const s of students)for(const a of s.subs)for(const b of s.subs)if(a!==b)adj[names.indexOf(a)][names.indexOf(b)]=true;
+ E=0;for(let i=0;i<N;i++)for(let j=i+1;j<N;j++)if(adj[i][j])E++}
+const sh=(a,b)=>students.filter(s=>s.subs.includes(names[a])&&s.subs.includes(names[b])).map(s=>s.n);
+function maxClique(){let b=1;(function r(c,s){b=Math.max(b,s);for(let i=0;i<c.length;i++){if(s+c.length-i<=b)return;r(c.slice(i+1).filter(u=>adj[c[i]][u]),s+1)}})([...Array(N).keys()],0);return b}
+function greedy(){const c=Array(N).fill(-1);for(let v=0;v<N;v++){let k=0;while(adj[v].some((e,u)=>e&&c[u]===k))k++;c[v]=k}return c}
+function msgOf(s){const n=names;switch(s.t){
+ case'k':return`Round ${s.k}: can every subject fit into ${s.k} slot${s.k>1?'s':''}?`;
+ case'conflict':{const w=sh(s.v,s.u);return`${n[s.v]} can’t use Slot ${s.c+1}: ${n[s.u]} is there and they share ${w[0]}${w.length>1?' and '+(w.length-1)+' more':''}.`}
+ case'assign':return`${n[s.v]} goes into Slot ${s.c+1}.`;
+ case'back':return`Dead end. Undo ${n[s.v]} and try another slot.`;
+ case'fail':return`${s.k} slot${s.k>1?'s are':' is'} not enough. Add one more slot and start again.`;
+ default:return exact?`Done. All ${N} subjects fit in ${s.k} slots, and fewer slots cannot work.`:`Search limit reached. Showing a valid timetable that may not be the minimum.`}}
+function solve(){steps=[];trunc=false;nodes=0;back=0;exact=true;const col=Array(N).fill(-1);
+ order=[...Array(N).keys()].sort((a,b)=>adj[b].filter(Boolean).length-adj[a].filter(Boolean).length);
+ const rec=(t,v,c,u,k,f)=>{if(steps.length<8000||f)steps.push({t,v,c,u,k,col:col.slice()});else trunc=true};
+ try{for(let k=1;k<=N;k++){rec('k',-1,-1,-1,k);
+  const bt=(i,used)=>{if(i===N)return true;if(++nodes>1500000)throw 0;const v=order[i];
+   for(let c=0;c<=Math.min(k-1,used+1);c++){const u=order.slice(0,i).find(x=>adj[v][x]&&col[x]===c);
+    if(u===undefined){col[v]=c;rec('assign',v,c,-1,k);if(bt(i+1,Math.max(used,c)))return true;col[v]=-1;back++;rec('back',v,c,-1,k)}
+    else rec('conflict',v,c,u,k)}return false};
+  if(bt(0,-1)){final=col.slice();K=k;rec('done',-1,-1,-1,k,true);return}rec('fail',-1,-1,-1,k)}
+ }catch(e){exact=false;final=greedy();K=Math.max(...final)+1;col.splice(0,N,...final);rec('done',-1,-1,-1,K,true)}}
+function layout(){P=names.map((_,i)=>[230+165*Math.cos(2*Math.PI*i/N-Math.PI/2),220+165*Math.sin(2*Math.PI*i/N-Math.PI/2)])}
+function draw(s){let h='';
+ for(let i=0;i<N;i++)for(let j=i+1;j<N;j++)if(adj[i][j]){const hot=s.t==='conflict'&&((s.v===i&&s.u===j)||(s.v===j&&s.u===i));
+  h+=`<line x1="${P[i][0]}" y1="${P[i][1]}" x2="${P[j][0]}" y2="${P[j][1]}" style="stroke:${hot?'var(--bad)':'var(--mut)'};stroke-width:${hot?4:1.4};opacity:${hot?1:.55}"/>`}
+ for(let i=0;i<N;i++){const c=s.col[i],cur=s.v===i,t=c>=0?'#10122a':'var(--ink)';
+  h+=`<g class="nd" data-i="${i}"><circle cx="${P[i][0]}" cy="${P[i][1]}" r="${cur?32:28}" style="fill:${c>=0?colr(c):'var(--card)'};stroke:${cur?'var(--ink)':'var(--mut)'};stroke-width:${cur?4:1.5}"/>
+  <text x="${P[i][0]}" y="${P[i][1]-1}" text-anchor="middle" font-size="11.5" font-weight="700" style="fill:${t}">${names[i].slice(0,7)}</text>
+  <text x="${P[i][0]}" y="${P[i][1]+13}" text-anchor="middle" font-size="10" style="fill:${t}">${c>=0?'Slot '+(c+1):''}</text></g>`}
+ $('g').innerHTML=h;
+ $('leg').innerHTML=[...Array(s.k)].map((_,c)=>`<span class="lg"><i style="background:${colr(c)}"></i>Slot ${c+1}</span>`).join('')}
+function show(i){pos=Math.max(0,Math.min(steps.length-1,i));const s=steps[pos];draw(s);
+ $('sl').value=pos;$('sS').textContent=pos+1;$('sK').textContent=s.k;
+ $('sB').textContent=steps.slice(0,pos+1).filter(x=>x.t==='back').length;
+ $('cap').className='cap '+s.t;$('cap').textContent=msgOf(s);
+ $('log').innerHTML=steps.slice(Math.max(0,pos-5),pos).reverse().map(x=>`<li>${msgOf(x)}</li>`).join('')}
+function stop(){clearInterval(timer);timer=null;$('play').textContent='Play'}
+function play(){if(timer)return stop();if(pos>=steps.length-1)show(0);$('play').textContent='Pause';
+ timer=setInterval(()=>{if(pos>=steps.length-1)return stop();show(pos+1)},1100-$('spd').value*100)}
+function table(){const spd=+$('spd2').value,days=Math.ceil(K/spd);
+ $('tl').textContent=`${N} subjects and ${students.length} students need ${K} slot${K>1?'s':''}, which is ${days} exam day${days>1?'s':''} at ${spd} per day.${trunc?' The animation shows the first 8000 steps.':''}`;
+ let h='<tr><th>Day</th>'+[...Array(spd).keys()].map(s=>`<th>${SES[s][0].toUpperCase()+SES[s].slice(1)}</th>`).join('')+'</tr>';
+ for(let d=0;d<days;d++){h+=`<tr><th>Day ${d+1}</th>`;for(let s=0;s<spd;s++){const c=d*spd+s;
+  h+=c<K?`<td class="sl" style="background:${colr(c)}">${names.map((n,i)=>final[i]===c?`<span>${n}</span>`:'').join('')}</td>`:'<td>-</td>'}h+='</tr>'}
+ $('tt').innerHTML=h;
+ let ok=true;for(const s of students){const u=s.subs.map(x=>final[names.indexOf(x)]);if(new Set(u).size!==u.length)ok=false}
+ $('ver').innerHTML=ok?'<span class="ok">Verified: no student has two exams in the same slot.</span>':'<span class="no">Conflict found.</span>';
+ $('st').innerHTML='<tr><th>Student</th><th>Exams in order</th></tr>'+students.map(s=>{const ex=s.subs.map(x=>[x,final[names.indexOf(x)]]).sort((a,b)=>a[1]-b[1]);
+  return`<tr><td>${s.n}</td><td>${ex.map(([x,c])=>`<span class="ex" style="background:${colr(c)}">${x} <small>Day ${Math.floor(c/spd)+1}, ${SES[c%spd]}</small></span>`).join('')}</td></tr>`}).join('')}
+function info(){gk=Math.max(...greedy())+1;
+ $('stats').innerHTML=[[N,'subjects'],[E,'clash lines'],[clq,'slots at least needed'],[K,exact?'slots at minimum':'slots found'],[nodes.toLocaleString(),'placements tried'],[back.toLocaleString(),'times undone']].map(x=>`<div><b>${x[0]}</b>${x[1]}</div>`).join('');
+ $('cmp').innerHTML=[['Greedy, first free slot',gk],['Backtracking',K]].map(x=>`<div class="bar"><span>${x[0]}</span><div><i style="width:${x[1]/N*100}%"></i>${x[1]} slot${x[1]>1?'s':''}</div></div>`).join('');
+ $('cmpt').textContent=gk>K?`Greedy gives each subject the first free slot and never reconsiders, so it used ${gk} slots here. Backtracking undoes bad choices and proved ${K} is enough.`:`On this data greedy happens to match backtracking at ${K}. Try the Wheel example or Random data to see greedy waste slots.`}
+function run(){stop();parse();$('err').textContent='';
+ if(N<2||N>14){$('err').textContent=N<2?'Add at least two subjects, for example “Asha: Maths, Physics”.':'Use 14 subjects or fewer so the search stays fast.';return}
+ clq=maxClique();solve();layout();info();table();$('sT').textContent=steps.length;$('sl').max=steps.length-1;show(0);
+ if(!(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches))play()}
+const g=$('g'),pt=e=>{const p=g.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(g.getScreenCTM().inverse());return[Math.max(32,Math.min(428,q.x)),Math.max(32,Math.min(408,q.y))]};
+g.onpointerdown=e=>{const n=e.target.closest('[data-i]');if(n){drag=+n.dataset.i;g.setPointerCapture(e.pointerId)}};
+g.onpointermove=e=>{if(drag>=0){P[drag]=pt(e);draw(steps[pos])}};g.onpointerup=()=>drag=-1;
+$('gen').onclick=run;$('pre').onchange=e=>{$('inp').value=PRE[e.target.value];run()};
+$('rnd').onclick=()=>{const n=8+Math.floor(Math.random()*5),pool=[...NM].sort(()=>Math.random()-.5).slice(0,n);
+ $('inp').value=Array.from({length:n+4},(_,i)=>`S${i+1}: `+[...pool].sort(()=>Math.random()-.5).slice(0,3).join(', ')).join('\n');run()};
+$('play').onclick=play;$('prev').onclick=()=>{stop();show(pos-1)};$('next').onclick=()=>{stop();show(pos+1)};
+$('end').onclick=()=>{stop();show(steps.length-1)};$('sl').oninput=e=>{stop();show(+e.target.value)};
+$('spd').oninput=()=>{if(timer){stop();play()}};$('spd2').onchange=table;
+$('cp').onclick=async()=>{const spd=+$('spd2').value;let t='';for(let c=0;c<K;c++)t+=`Day ${Math.floor(c/spd)+1} ${SES[c%spd]}: ${names.filter((_,i)=>final[i]===c).join(', ')}\n`;
+ try{await navigator.clipboard.writeText(t);$('cps').textContent='Copied.'}catch(e){$('cps').textContent='Copy is blocked here. Select the table and copy it.'}};
+$('inp').value=PRE.school;run();
+</script></body></html>
